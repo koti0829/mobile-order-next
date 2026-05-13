@@ -72,7 +72,12 @@ export async function POST(req: NextRequest) {
       );
 
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
+        // payment_method_types を省略することで Stripe の Dynamic Payment Methods が有効になる。
+        // Stripe ダッシュボード → 設定 → 決済手段 で有効化した手段が自動で表示される。
+        // PayPay / Apple Pay / Google Pay を追加する場合はダッシュボードで有効化すること：
+        // https://dashboard.stripe.com/settings/payment_methods
+        // ※ Apple Pay・Google Pay は card を有効化すると自動的に対応デバイスで表示される。
+        // ※ PayPay は mode:'payment' かつ currency:'jpy' のときのみ使用可能。
         line_items: items.map((item) => ({
           price_data: {
             currency: 'jpy',
