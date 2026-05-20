@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { getSupabaseServer } from '@/lib/supabase-server';
-
-// Stripe SDK 17.x の Checkout.SessionCreateParams には automatic_payment_methods が
-// 型定義されていないため、型を拡張して使用する
-type SessionParams = Stripe.Checkout.SessionCreateParams & {
-  automatic_payment_methods?: { enabled: boolean };
-};
 
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 function genOrderNum(): string {
@@ -78,11 +71,11 @@ export async function POST(req: NextRequest) {
         items.map(i => ({ id: i.menuId, qty: i.quantity }))
       );
 
-      const sessionParams: SessionParams = {
-        // Stripe ダッシュボード → 設定 → 決済手段 で
-        // PayPay / Apple Pay / Google Pay を有効化すること
+      const session = await stripe.checkout.sessions.create({
+        // payment_method_types を省略することで Stripe Dashboard の設定が自動適用される
+        // （Dynamic Payment Methods）。PayPay / Apple Pay / Google Pay を追加する場合は
+        // Stripe ダッシュボード → 設定 → 決済手段 で有効化すること：
         // https://dashboard.stripe.com/settings/payment_methods
-        automatic_payment_methods: { enabled: true },
         line_items: items.map((item) => ({
           price_data: {
             currency: 'jpy',
@@ -99,8 +92,7 @@ export async function POST(req: NextRequest) {
         cancel_url:  `${origin}/`,
         metadata:    { orderNumber, slot, items: stockItems },
         locale:      'ja',
-      };
-      const session = await stripe.checkout.sessions.create(sessionParams);
+      });
 
       return NextResponse.json({ url: session.url, orderNumber });
     } catch (err: unknown) {
