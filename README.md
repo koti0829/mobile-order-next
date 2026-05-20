@@ -2,6 +2,8 @@
 
 学生食堂向けモバイルオーダーシステム。
 
+**本番 URL**: https://mobile-order-try.vercel.app
+
 ## 技術スタック
 
 - **フロントエンド**: Next.js 15 (App Router) + TypeScript
