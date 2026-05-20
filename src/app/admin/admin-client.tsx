@@ -798,7 +798,7 @@ function SettingsPanel({
   onRemoveHolidayDates: (dates: string[], slots?: Slot[]) => void;
   onUpdateRegularHols: (hols: RegularHolidayEntry[]) => void;
 }) {
-  const [newAdminEmail,   setNewAdminEmail]   = useState('');
+  const [newAdminUsername, setNewAdminUsername] = useState('');
   const [newHoliday,      setNewHoliday]      = useState('');
   const [newHolidaySlots, setNewHolidaySlots] = useState<Slot[]>([]);
   const [holidayMode,     setHolidayMode]     = useState<'single' | 'period'>('single');
@@ -835,8 +835,8 @@ function SettingsPanel({
   };
 
   const submitAdmin = () => {
-    if (!newAdminEmail.trim()) return;
-    onAddAdmin(newAdminEmail.trim()); setNewAdminEmail('');
+    if (!newAdminUsername.trim()) return;
+    onAddAdmin(`${newAdminUsername.trim()}@gmail.com`); setNewAdminUsername('');
   };
 
   const allSlotsSelected = newHolidaySlots.length === SLOT_KEYS.length;
@@ -1107,8 +1107,13 @@ function SettingsPanel({
         ))}
 
         <div style={{ marginTop: 12 }}>
-          <input className="form-input" type="email" placeholder="example@gmail.com"
-            value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <input className="form-input" type="text" placeholder="example"
+              value={newAdminUsername} onChange={e => setNewAdminUsername(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submitAdmin()}
+              style={{ flex: 1 }} />
+            <span style={{ fontSize: 14, color: 'var(--text)', whiteSpace: 'nowrap' }}>@gmail.com</span>
+          </div>
           <button className="save-btn" onClick={submitAdmin} style={{ marginTop: 6 }}>追加する</button>
         </div>
       </div>
