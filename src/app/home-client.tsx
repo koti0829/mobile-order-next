@@ -100,10 +100,15 @@ type Sheet = 'cart' | 'confirm' | null;
 const entryKey = (menuId: number, opts: OptionItem[]) =>
   `${menuId}:${opts.map(o => o.id).sort().join(',')}`;
 
-export default function HomePage() {
-  const [menu,           setMenu]           = useState<MenuItem[]>([]);
+interface HomePageProps {
+  initialMenu?:    MenuItem[];
+  initialOptions?: OptionItem[];
+}
+
+export default function HomePage({ initialMenu, initialOptions }: HomePageProps) {
+  const [menu,           setMenu]           = useState<MenuItem[]>(initialMenu    ?? []);
   const [cart,           setCart]           = useState<CartEntry[]>([]);
-  const [customOptions,  setCustomOptions]  = useState<OptionItem[]>([]);
+  const [customOptions,  setCustomOptions]  = useState<OptionItem[]>(initialOptions ?? []);
   const [modalItem,      setModalItem]      = useState<MenuItem | null>(null);
   const [modalSelected,  setModalSelected]  = useState<OptionItem[]>([]);
   const [activeCategory, setCategory]       = useState('すべて');

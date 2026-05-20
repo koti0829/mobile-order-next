@@ -1,6 +1,7 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { MENU_CACHE_TAG } from '@/lib/menu-cache';
 import { getServerSession } from 'next-auth';
 import { authOptions, isEnvAdmin } from '@/lib/auth';
 import { getSupabaseServer } from '@/lib/supabase-server';
@@ -40,6 +41,7 @@ export async function addMenuItem(item: Omit<MenuItem, 'id' | 'enabled' | 'soldO
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 export async function updateMenuItem(id: number, item: Partial<MenuItem>) {
@@ -67,6 +69,7 @@ export async function updateMenuItem(id: number, item: Partial<MenuItem>) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 export async function toggleSoldOut(id: number, soldOut: boolean) {
@@ -79,6 +82,7 @@ export async function toggleSoldOut(id: number, soldOut: boolean) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 // 論理削除（ゴミ箱へ）
@@ -92,6 +96,7 @@ export async function deleteMenuItem(id: number) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 // 復元（ゴミ箱から戻す）
@@ -105,6 +110,7 @@ export async function restoreMenuItem(id: number) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 // 完全削除（物理削除）
@@ -115,6 +121,7 @@ export async function permanentlyDeleteMenuItem(id: number) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 // 在庫補充 + soldOut 再計算
@@ -130,6 +137,7 @@ export async function replenishStock(id: number, stock: number | null) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 // ── オプション ──
@@ -165,6 +173,7 @@ export async function addOption(
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 export async function updateOption(
@@ -190,6 +199,7 @@ export async function updateOption(
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 export async function deleteOption(id: string) {
@@ -199,6 +209,7 @@ export async function deleteOption(id: string) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidateTag(MENU_CACHE_TAG, {});
 }
 
 // ── 注文 ──
