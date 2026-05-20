@@ -7,7 +7,7 @@ export const SLOTS: Record<Slot, SlotInfo> = {
 };
 
 // 食券URLは端末ローカルなのでlocalStorageのままでOK
-export const RECENT_TICKETS_KEY = 'tcuCafe_recentTickets';
+export const RECENT_TICKETS_KEY = 'cafe_recentTickets';
 
 // テスト用：NEXT_PUBLIC_DEV_TEST_MODE=true の時のみ有効
 // .env.local で設定、本番(Vercel)では未設定のため自動的に false

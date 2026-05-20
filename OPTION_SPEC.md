@@ -68,7 +68,7 @@ export interface Order {
 ### 2-1. ストレージキーを追加
 
 ```ts
-export const OPTION_KEY = 'tcuCafe_options';
+export const OPTION_KEY = 'cafe_options';
 ```
 
 ### 2-2. システム固定オプションを定数として追加
