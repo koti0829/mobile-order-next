@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { getSupabaseServer } from '@/lib/supabase-server';
 
+// I・O は数字の 1・0 と紛らわしいため除外（24文字）
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 function genOrderNum(): string {
-  const letter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
-  const num = String(Math.floor(Math.random() * 900) + 100);
-  return `${letter}-${num}`;
+  // 大文字2字 + 4桁数字（例: AB-1234）
+  // 24×24×10000 = 5,760,000 通り
+  const p1 = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+  const p2 = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+  const num = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `${p1}${p2}-${num}`;
 }
 
 interface CheckoutItem {
