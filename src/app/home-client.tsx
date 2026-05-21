@@ -378,7 +378,7 @@ export default function HomePage({ initialMenu, initialOptions }: HomePageProps)
       <header className="header">
         <div className="header-top">
           <div>
-            <div className="shop-name">世田谷キャンパス 学生食堂</div>
+            <div className="shop-name">学生食堂</div>
             <div className="shop-sub">モバイルオーダー</div>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
