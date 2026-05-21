@@ -206,7 +206,7 @@ img { object-fit: cover; }
 .ticket-num-row::before, .ticket-num-row::after { content:""; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #111; }
 .ticket-num-row::before { left: -10px; }
 .ticket-num-row::after  { right: -10px; }
-.order-num       { font-size: 52px; font-weight: 900; color: var(--primary); letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+.order-num       { font-size: 44px; font-weight: 900; color: var(--primary); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
 .order-num-label { font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
 .ticket-items { padding: 12px 20px; border-bottom: 2px dashed var(--border); position: relative; }
 .ticket-items::before, .ticket-items::after { content:""; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #111; }

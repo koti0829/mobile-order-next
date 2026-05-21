@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { getStripe } from '@/lib/stripe';
 import { getSupabaseServer } from '@/lib/supabase-server';
 
-// I・O は数字の 1・0 と紛らわしいため除外（24文字）
-const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 function genOrderNum(): string {
-  // 大文字2字 + 4桁数字（例: AB-1234）
-  // 24×24×10000 = 5,760,000 通り
-  const p1 = LETTERS[Math.floor(Math.random() * LETTERS.length)];
-  const p2 = LETTERS[Math.floor(Math.random() * LETTERS.length)];
-  const num = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `${p1}${p2}-${num}`;
+  // UUID の先頭8文字を大文字化（例: A3F2B1C4）
+  // 16^8 = 約43億通り、実用上衝突なし
+  return randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
 }
 
 interface CheckoutItem {
