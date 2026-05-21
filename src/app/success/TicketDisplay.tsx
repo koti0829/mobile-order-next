@@ -78,7 +78,7 @@ export default function TicketDisplay({ orderData }: Props) {
     <div className="ticket-page">
       <div className="ticket-wrap">
         <div className="ticket-header">
-          <h2>世田谷キャンパス 学生食堂</h2>
+          <h2>学生食堂</h2>
           <div className="shop">MOBILE ORDER</div>
           <div className="slot-label">{slotLabel}</div>
         </div>
