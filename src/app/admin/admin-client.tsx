@@ -1154,44 +1154,53 @@ function SettingsPanel({
       <div className="admin-card" style={{ padding: 16, marginBottom: 10 }}>
         <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>👥 管理者リスト</p>
 
-        {envAdmins.length > 0 && (
-          <div style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>固定管理者（変更不可）</p>
-            {envAdmins.map(email => (
+        {isDemo ? (
+          <p style={{ color: '#999', fontSize: 14, padding: '8px 0' }}>
+            デモモードのためメールアドレスは非表示です
+          </p>
+        ) : (
+          <>
+            {envAdmins.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>固定管理者（変更不可）</p>
+                {envAdmins.map(email => (
+                  <div key={email} style={{
+                    display: 'flex', justifyContent: 'space-between', padding: '6px 0',
+                    fontSize: 13, borderBottom: '1px solid var(--border)',
+                  }}>
+                    <span>🔒 {email}</span>
+                    <span style={{ fontSize: 11, color: 'var(--muted)' }}>固定</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>追加管理者</p>
+            {dbAdmins.length === 0 ? (
+              <p style={{ fontSize: 12, color: 'var(--muted)', padding: 8 }}>追加管理者はいません</p>
+            ) : dbAdmins.map(email => (
               <div key={email} style={{
-                display: 'flex', justifyContent: 'space-between', padding: '6px 0',
-                fontSize: 13, borderBottom: '1px solid var(--border)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '6px 0', fontSize: 13, borderBottom: '1px solid var(--border)',
               }}>
-                <span>🔒 {email}</span>
-                <span style={{ fontSize: 11, color: 'var(--muted)' }}>固定</span>
+                <span>{email}</span>
+                <button className="act-btn act-del" onClick={() => onRemoveAdmin(email)}>削除</button>
               </div>
             ))}
-          </div>
+
+            <div style={{ marginTop: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <input className="form-input" type="text" placeholder="example"
+                  value={newAdminUsername} onChange={e => setNewAdminUsername(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && submitAdmin()}
+                  style={{ flex: 1 }} />
+                <span style={{ fontSize: 14, color: 'var(--text)', whiteSpace: 'nowrap' }}>@gmail.com</span>
+              </div>
+              <button className="save-btn" onClick={submitAdmin} style={{ marginTop: 6 }}>追加する</button>
+            </div>
+          </>
         )}
 
-        <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>追加管理者</p>
-        {dbAdmins.length === 0 ? (
-          <p style={{ fontSize: 12, color: 'var(--muted)', padding: 8 }}>追加管理者はいません</p>
-        ) : dbAdmins.map(email => (
-          <div key={email} style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '6px 0', fontSize: 13, borderBottom: '1px solid var(--border)',
-          }}>
-            <span>{email}</span>
-            <button className="act-btn act-del" onClick={() => onRemoveAdmin(email)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>削除</button>
-          </div>
-        ))}
-
-        <div style={{ marginTop: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <input className="form-input" type="text" placeholder="example"
-              value={newAdminUsername} onChange={e => setNewAdminUsername(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && submitAdmin()}
-              style={{ flex: 1 }} />
-            <span style={{ fontSize: 14, color: 'var(--text)', whiteSpace: 'nowrap' }}>@gmail.com</span>
-          </div>
-          <button className="save-btn" onClick={submitAdmin} style={{ marginTop: 6, ...(isDemo ? DEMO_BTN : {}) }} disabled={isDemo}>追加する</button>
-        </div>
       </div>
 
       <div className="admin-card" style={{ padding: 16, marginBottom: 10 }}>
