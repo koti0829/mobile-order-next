@@ -248,6 +248,35 @@ export async function deleteOrder(id: string) {
   revalidatePath('/admin');
 }
 
+export async function bulkDeleteOrders(ids: string[]) {
+  await requireAdmin();
+  if (ids.length === 0) return;
+  const supabase = getSupabaseServer();
+
+  // pending 注文は在庫を戻す
+  const { data: orderRows } = await supabase
+    .from('orders')
+    .select('items, status')
+    .in('id', ids);
+
+  for (const row of orderRows ?? []) {
+    if (row.status === 'pending' && Array.isArray(row.items)) {
+      for (const item of row.items) {
+        if (item.menuId != null) {
+          await supabase.rpc('restore_stock', {
+            p_menu_id: item.menuId,
+            p_qty:     item.qty,
+          });
+        }
+      }
+    }
+  }
+
+  const { error } = await supabase.from('orders').delete().in('id', ids);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin');
+}
+
 // ── 管理者 ──
 export async function addAdminEmail(email: string) {
   await requireAdmin();

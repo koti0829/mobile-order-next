@@ -10,7 +10,7 @@ import {
   addMenuItem, updateMenuItem, toggleSoldOut, deleteMenuItem,
   restoreMenuItem, permanentlyDeleteMenuItem, replenishStock,
   addOption, updateOption, deleteOption,
-  markOrderReady, deleteOrder,
+  markOrderReady, deleteOrder, bulkDeleteOrders,
   addAdminEmail, removeAdminEmail,
   updateOperatingHours, setOrderPaused,
   addHoliday, addHolidayBatch, removeHoliday, updateRegularHolidays,
@@ -150,10 +150,35 @@ export default function AdminClient(props: Props) {
   };
 
   // ── Orders ──
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds(
+      selectedIds.size === orders.length ? new Set() : new Set(orders.map(o => o.id))
+    );
+  };
+
   const setOrderReady = (id: string) => run(() => markOrderReady(id));
+
   const handleDeleteOrder = (id: string) => {
     if (!confirm('この注文を削除しますか？')) return;
     run(() => deleteOrder(id));
+  };
+
+  const handleBulkDelete = () => {
+    if (!confirm(`選択した ${selectedIds.size} 件の注文を削除しますか？`)) return;
+    run(async () => {
+      await bulkDeleteOrders(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    });
   };
 
   // ── Options ──
@@ -195,9 +220,6 @@ export default function AdminClient(props: Props) {
       <div className="admin-header">
         <h1>⚙️ 管理者パネル</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 11, color: 'var(--muted)' }}>
-            {props.currentEmail}{props.isCurrentEnvAdmin ? ' 🔒' : ''}
-          </span>
           <Link href="/" className="admin-exit">← 注文画面へ</Link>
         </div>
       </div>
@@ -305,31 +327,66 @@ export default function AdminClient(props: Props) {
           <br />
           {orders.length === 0 ? (
             <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 30 }}>注文履歴がありません</p>
-          ) : orders.map(o => {
-            const tStr = formatDateTime(o.time);
-            return (
-              <div key={o.id} className="admin-card" style={{ marginBottom: 10 }}>
-                <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', minWidth: 70 }}>{o.id}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {o.items.map(i => `${i.name}×${i.qty}`).join('、')}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 3 }}>
-                      {tStr} · ¥{o.total.toLocaleString()} · {o.slotLabel}
-                    </div>
-                    <div style={{ fontSize: 11, marginTop: 4 }}>{STATUS_LABEL[o.status] ?? o.status}</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 6, padding: '0 14px 12px' }}>
-                  {o.status === 'pending'
-                    ? <button className="act-btn act-sold" style={{ flex: 2 }} onClick={() => setOrderReady(o.id)}>✅ 準備完了</button>
-                    : <span style={{ fontSize: 12, color: 'var(--success)', padding: 4, fontWeight: 700 }}>受け取り可能</span>}
-                  <button className="act-btn act-del" onClick={() => handleDeleteOrder(o.id)}>削除</button>
-                </div>
+          ) : (
+            <>
+              {/* ── ヘッダー：全選択 + 一括削除ボタン ── */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, padding: '0 4px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === orders.length && orders.length > 0}
+                    onChange={toggleSelectAll}
+                  />
+                  すべて選択
+                </label>
+                {selectedIds.size > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    style={{
+                      marginLeft: 'auto', padding: '6px 14px', borderRadius: 10,
+                      background: '#e53935', color: '#fff', border: 'none',
+                      fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    🗑️ 選択した注文を削除（{selectedIds.size}件）
+                  </button>
+                )}
               </div>
-            );
-          })}
+
+              {/* ── 注文一覧 ── */}
+              {orders.map(o => {
+                const tStr = formatDateTime(o.time);
+                return (
+                  <div key={o.id} className="admin-card" style={{ marginBottom: 10 }}>
+                    <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(o.id)}
+                        onChange={() => toggleSelect(o.id)}
+                        style={{ flexShrink: 0 }}
+                      />
+                      <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', minWidth: 70 }}>{o.id}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {o.items.map(i => `${i.name}×${i.qty}`).join('、')}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 3 }}>
+                          {tStr} · ¥{o.total.toLocaleString()} · {o.slotLabel}
+                        </div>
+                        <div style={{ fontSize: 11, marginTop: 4 }}>{STATUS_LABEL[o.status] ?? o.status}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, padding: '0 14px 12px' }}>
+                      {o.status === 'pending'
+                        ? <button className="act-btn act-sold" style={{ flex: 2 }} onClick={() => setOrderReady(o.id)}>✅ 準備完了</button>
+                        : <span style={{ fontSize: 12, color: 'var(--success)', padding: 4, fontWeight: 700 }}>受け取り可能</span>}
+                      <button className="act-btn act-del" onClick={() => handleDeleteOrder(o.id)}>削除</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
       )}
 
