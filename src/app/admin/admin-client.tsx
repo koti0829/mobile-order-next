@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MenuItem, Order, Slot, OptionItem } from '@/types';
@@ -46,9 +46,13 @@ interface Props {
   initialDbAdmins: string[];
   envAdmins: string[];
   settings: AppSettings;
+  isDemo?: boolean;
 }
 
+const DEMO_BTN: React.CSSProperties = { opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none' };
+
 export default function AdminClient(props: Props) {
+  const { isDemo = false } = props;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -239,7 +243,7 @@ export default function AdminClient(props: Props) {
       {tab === 'menu' && (
         <div className="admin-section">
           <br />
-          <button className="add-item-btn" onClick={() => openEdit(null)}>＋ メニューを追加する</button>
+          <button className="add-item-btn" onClick={() => openEdit(null)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>＋ メニューを追加する</button>
 
           {/* 曜日タブ */}
           <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
@@ -303,15 +307,15 @@ export default function AdminClient(props: Props) {
                       </div>
                     </div>
                     <div className="admin-card-acts">
-                      <button className="act-btn act-edit"  onClick={() => openEdit(item.id)}>編集</button>
+                      <button className="act-btn act-edit"  onClick={() => openEdit(item.id)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>編集</button>
                       <button className={`act-btn ${item.soldOut ? 'act-unsold' : 'act-sold'}`}
-                        onClick={() => toggleSold(item.id, item.soldOut)}>
+                        onClick={() => toggleSold(item.id, item.soldOut)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>
                         {item.soldOut ? '販売再開' : '売り切れ'}
                       </button>
                       <button className="act-btn"
-                        style={{ background: '#e8f4fd', color: '#007aff' }}
-                        onClick={() => handleReplenish(item.id, item.stock)}>補充</button>
-                      <button className="act-btn act-del" onClick={() => deleteItem(item.id)}>削除</button>
+                        style={{ background: '#e8f4fd', color: '#007aff', ...(isDemo ? DEMO_BTN : {}) }}
+                        onClick={() => handleReplenish(item.id, item.stock)} disabled={isDemo}>補充</button>
+                      <button className="act-btn act-del" onClick={() => deleteItem(item.id)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>削除</button>
                     </div>
                   </div>
                 ))}
@@ -331,11 +335,12 @@ export default function AdminClient(props: Props) {
             <>
               {/* ── ヘッダー：全選択 + 一括削除ボタン ── */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, padding: '0 4px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', userSelect: 'none' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: isDemo ? 'not-allowed' : 'pointer', userSelect: 'none', opacity: isDemo ? 0.4 : 1 }}>
                   <input
                     type="checkbox"
                     checked={selectedIds.size === orders.length && orders.length > 0}
                     onChange={toggleSelectAll}
+                    disabled={isDemo}
                   />
                   すべて選択
                 </label>
@@ -346,7 +351,9 @@ export default function AdminClient(props: Props) {
                       marginLeft: 'auto', padding: '6px 14px', borderRadius: 10,
                       background: '#e53935', color: '#fff', border: 'none',
                       fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      ...(isDemo ? DEMO_BTN : {}),
                     }}
+                    disabled={isDemo}
                   >
                     🗑️ 選択した注文を削除（{selectedIds.size}件）
                   </button>
@@ -364,6 +371,7 @@ export default function AdminClient(props: Props) {
                         checked={selectedIds.has(o.id)}
                         onChange={() => toggleSelect(o.id)}
                         style={{ flexShrink: 0 }}
+                        disabled={isDemo}
                       />
                       <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', minWidth: 70 }}>{o.id}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -378,9 +386,9 @@ export default function AdminClient(props: Props) {
                     </div>
                     <div style={{ display: 'flex', gap: 6, padding: '0 14px 12px' }}>
                       {o.status === 'pending'
-                        ? <button className="act-btn act-sold" style={{ flex: 2 }} onClick={() => setOrderReady(o.id)}>✅ 準備完了</button>
+                        ? <button className="act-btn act-sold" style={{ flex: 2, ...(isDemo ? DEMO_BTN : {}) }} onClick={() => setOrderReady(o.id)} disabled={isDemo}>✅ 準備完了</button>
                         : <span style={{ fontSize: 12, color: 'var(--success)', padding: 4, fontWeight: 700 }}>受け取り可能</span>}
-                      <button className="act-btn act-del" onClick={() => handleDeleteOrder(o.id)}>削除</button>
+                      <button className="act-btn act-del" onClick={() => handleDeleteOrder(o.id)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>削除</button>
                     </div>
                   </div>
                 );
@@ -392,7 +400,7 @@ export default function AdminClient(props: Props) {
 
       {/* ── Options tab ── */}
       {tab === 'options' && (
-        <OptionsPanel menu={menu} options={options} onAdd={handleAddOption} onUpdate={handleUpdateOption} onDelete={handleDeleteOption} />
+        <OptionsPanel menu={menu} options={options} onAdd={handleAddOption} onUpdate={handleUpdateOption} onDelete={handleDeleteOption} isDemo={isDemo} />
       )}
 
       {/* ── Trash tab ── */}
@@ -421,8 +429,8 @@ export default function AdminClient(props: Props) {
                 </div>
               </div>
               <div className="admin-card-acts">
-                <button className="act-btn act-unsold" onClick={() => restoreItem(item.id)}>復元</button>
-                <button className="act-btn act-del"    onClick={() => permanentlyDeleteItem(item.id)}>完全削除</button>
+                <button className="act-btn act-unsold" onClick={() => restoreItem(item.id)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>復元</button>
+                <button className="act-btn act-del"    onClick={() => permanentlyDeleteItem(item.id)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>完全削除</button>
               </div>
             </div>
           ))}
@@ -444,6 +452,7 @@ export default function AdminClient(props: Props) {
           onRemoveHoliday={handleRemoveHoliday}
           onRemoveHolidayDates={handleRemoveHolidayDates}
           onUpdateRegularHols={handleUpdateRegularHols}
+          isDemo={isDemo}
         />
       )}
 
@@ -583,13 +592,14 @@ function formatSlots(slots: Slot[] | null | undefined): string {
 
 // ── Options Panel ────────────────────────────────────────────────
 function OptionsPanel({
-  menu, options, onAdd, onUpdate, onDelete,
+  menu, options, onAdd, onUpdate, onDelete, isDemo = false,
 }: {
   menu: MenuItem[];
   options: OptionItem[];
   onAdd: (name: string, price: number, appliesTo: string, weekdays: number[] | null, slots: Slot[] | null) => void;
   onUpdate: (id: string, data: { name?: string; price?: number; appliesTo?: string; weekdays?: number[] | null; slots?: Slot[] | null }) => void;
   onDelete: (id: string) => void;
+  isDemo?: boolean;
 }) {
   const [editingOption, setEditingOption] = useState<OptionItem | null>(null);
   const [name,          setName]          = useState('');
@@ -712,7 +722,7 @@ function OptionsPanel({
         </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="save-btn" style={{ flex: 1 }} onClick={handleSave}>
+          <button className="save-btn" style={{ flex: 1, ...(isDemo ? DEMO_BTN : {}) }} onClick={handleSave} disabled={isDemo}>
             {editingOption ? '更新する' : '追加する'}
           </button>
           {editingOption && (
@@ -741,8 +751,8 @@ function OptionsPanel({
                 {' · '}{formatSlots(opt.slots)}
               </div>
             </div>
-            <button className="act-btn act-edit" onClick={() => openEdit(opt)}>編集</button>
-            <button className="act-btn act-del"  onClick={() => onDelete(opt.id)}>削除</button>
+            <button className="act-btn act-edit" onClick={() => openEdit(opt)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>編集</button>
+            <button className="act-btn act-del"  onClick={() => onDelete(opt.id)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>削除</button>
           </div>
         </div>
       ))}
@@ -841,6 +851,7 @@ function SettingsPanel({
   onAddAdmin, onRemoveAdmin,
   onUpdateHours, onSetPaused,
   onAddHoliday, onAddHolidayBatch, onRemoveHoliday, onRemoveHolidayDates, onUpdateRegularHols,
+  isDemo = false,
 }: {
   settings: AppSettings;
   envAdmins: string[];
@@ -854,6 +865,7 @@ function SettingsPanel({
   onRemoveHoliday: (date: string, slots?: Slot[]) => void;
   onRemoveHolidayDates: (dates: string[], slots?: Slot[]) => void;
   onUpdateRegularHols: (hols: RegularHolidayEntry[]) => void;
+  isDemo?: boolean;
 }) {
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [newHoliday,      setNewHoliday]      = useState('');
@@ -954,8 +966,9 @@ function SettingsPanel({
           </div>
           <button
             className={`act-btn ${settings.orderPaused ? 'act-unsold' : 'act-sold'}`}
-            style={{ fontSize: 13, padding: '10px 18px' }}
+            style={{ fontSize: 13, padding: '10px 18px', ...(isDemo ? DEMO_BTN : {}) }}
             onClick={() => onSetPaused(!settings.orderPaused)}
+            disabled={isDemo}
           >
             {settings.orderPaused ? '再開する' : '停止する'}
           </button>
@@ -979,7 +992,7 @@ function SettingsPanel({
             </div>
           </div>
         ))}
-        <button className="save-btn" onClick={saveHours}>保存する</button>
+        <button className="save-btn" onClick={saveHours} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>保存する</button>
       </div>
 
       {/* ── 特定日 休業日 ── */}
@@ -1045,6 +1058,8 @@ function SettingsPanel({
           <button
             className="act-btn act-edit"
             onClick={holidayMode === 'single' ? submitHoliday : submitPeriodHoliday}
+            style={isDemo ? DEMO_BTN : undefined}
+            disabled={isDemo}
           >追加</button>
         </div>
 
@@ -1077,7 +1092,10 @@ function SettingsPanel({
                     onClick={() => onRemoveHolidayDates(
                       group.dates,
                       group.slots && group.slots.length > 0 ? group.slots : undefined
-                    )}>削除</button>
+                    )}
+                    style={isDemo ? DEMO_BTN : undefined}
+                    disabled={isDemo}
+                  >削除</button>
                 </div>
               );
             })}
@@ -1125,8 +1143,9 @@ function SettingsPanel({
             </tbody>
           </table>
         </div>
-        <button className="save-btn" style={{ marginTop: 14 }}
-          onClick={() => onUpdateRegularHols(buildRegHolidays(regHolMat))}>
+        <button className="save-btn" style={{ marginTop: 14, ...(isDemo ? DEMO_BTN : {}) }}
+          onClick={() => onUpdateRegularHols(buildRegHolidays(regHolMat))}
+          disabled={isDemo}>
           保存する
         </button>
       </div>
@@ -1159,7 +1178,7 @@ function SettingsPanel({
             padding: '6px 0', fontSize: 13, borderBottom: '1px solid var(--border)',
           }}>
             <span>{email}</span>
-            <button className="act-btn act-del" onClick={() => onRemoveAdmin(email)}>削除</button>
+            <button className="act-btn act-del" onClick={() => onRemoveAdmin(email)} style={isDemo ? DEMO_BTN : undefined} disabled={isDemo}>削除</button>
           </div>
         ))}
 
@@ -1171,7 +1190,7 @@ function SettingsPanel({
               style={{ flex: 1 }} />
             <span style={{ fontSize: 14, color: 'var(--text)', whiteSpace: 'nowrap' }}>@gmail.com</span>
           </div>
-          <button className="save-btn" onClick={submitAdmin} style={{ marginTop: 6 }}>追加する</button>
+          <button className="save-btn" onClick={submitAdmin} style={{ marginTop: 6, ...(isDemo ? DEMO_BTN : {}) }} disabled={isDemo}>追加する</button>
         </div>
       </div>
 
