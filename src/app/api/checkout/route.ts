@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       );
 
       const session = await stripe.checkout.sessions.create({
+        customer_creation: 'always',
         // payment_method_types を省略することで Stripe Dashboard の設定が自動適用される
         // （Dynamic Payment Methods）。PayPay / Apple Pay / Google Pay を追加する場合は
         // Stripe ダッシュボード → 設定 → 決済手段 で有効化すること：
