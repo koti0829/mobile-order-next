@@ -1093,7 +1093,7 @@ function SettingsPanel({
                       group.dates,
                       group.slots && group.slots.length > 0 ? group.slots : undefined
                     )}
-                    style={isDemo ? DEMO_BTN : undefined}
+                    style={{ flex: 'none', ...(isDemo ? DEMO_BTN : {}) }}
                     disabled={isDemo}
                   >削除</button>
                 </div>
@@ -1184,7 +1184,7 @@ function SettingsPanel({
                 padding: '6px 0', fontSize: 13, borderBottom: '1px solid var(--border)',
               }}>
                 <span>{email}</span>
-                <button className="act-btn act-del" onClick={() => onRemoveAdmin(email)}>削除</button>
+                <button className="act-btn act-del" onClick={() => onRemoveAdmin(email)} style={{ flex: 'none' }}>削除</button>
               </div>
             ))}
 
