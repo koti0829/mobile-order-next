@@ -13,7 +13,7 @@
 
 ## 技術スタック
 
-- **フロントエンド**: Next.js 16（App Router）+ TypeScript ※`README.md` には「Next.js 15」とあるが `package-lock.json` 実体は 16.2.6。揃えるなら README を更新
+- **フロントエンド**: Next.js 16（App Router）+ TypeScript 
 - **データベース**: Supabase（PostgreSQL）。`SUPABASE_SERVICE_ROLE_KEY` は RLS をバイパスするため必ずサーバー側でのみ使用
 - **認証**: NextAuth.js（Google OAuth）。管理画面のみ認証必須で、`signIn` コールバックで管理者だけログイン可
 - **決済**: Stripe Checkout（`/api/checkout`）+ Webhook（`/api/webhook`）
