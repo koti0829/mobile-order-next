@@ -13,7 +13,7 @@
 
 ## 技術スタック
 
-- **フロントエンド**: Next.js 16（App Router）+ TypeScript 
+- **フロントエンド**: Next.js 16（App Router）+ TypeScript ※`README.md` には「Next.js 15」とあるが `package-lock.json` 実体は 16.2.6。揃えるなら README を更新
 - **データベース**: Supabase（PostgreSQL）。`SUPABASE_SERVICE_ROLE_KEY` は RLS をバイパスするため必ずサーバー側でのみ使用
 - **認証**: NextAuth.js（Google OAuth）。管理画面のみ認証必須で、`signIn` コールバックで管理者だけログイン可
 - **決済**: Stripe Checkout（`/api/checkout`）+ Webhook（`/api/webhook`）
@@ -67,7 +67,7 @@ src/
 4. **「マージしていい？」とユーザーに確認してから** `main` へマージ
 5. マージ後、Vercel が本番へ自動デプロイ。結果（成功/失敗）をユーザーに報告。失敗なら即追加修正
 
-> **閾値ルール**: 決済・在庫・認証まわりに触る変更は必ず上記のPRフローを通すこと。文言修正や軽微なスタイル調整など些末な変更は直 push 可。
+> **閾値ルール（最重要）**: `main` への反映は、直 push・PRマージのいずれであっても、**変更の種類を問わず必ず事前にユーザーへ確認を取ること**。ドキュメントや文言修正など些末な変更でも例外なく、ユーザーの明示的な「OK」を得てから `main` へ反映する。確認前に `main` へ push / merge してはならない。
 >
 > **PR操作の前提**: `merge_pull_request` 等を使う場合は GitHub コネクタの有効化、または `gh` CLI が必要。未設定なら素の git 運用に留めること。
 
@@ -77,23 +77,23 @@ src/
 
 ```
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=        # サーバー専用・絶対に公開しない
+NEXT_PUBLIC_SUPABASE_URL=         # supabase.ts / supabase-server.ts
+NEXT_PUBLIC_SUPABASE_ANON_KEY=    # ブラウザ用（supabase.ts）
+SUPABASE_SERVICE_ROLE_KEY=        # サーバー専用（supabase-server.ts）・絶対に公開しない
 
 # Stripe
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=            # Webhook 検証用
+STRIPE_SECRET_KEY=                # stripe.ts
+STRIPE_WEBHOOK_SECRET=            # api/webhook/route.ts（署名検証）
 
 # NextAuth（Google OAuth）
-NEXTAUTH_URL=
+NEXTAUTH_URL=                     # デプロイ先URL（例: https://xxx.vercel.app）
+NEXTAUTH_SECRET=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-NEXTAUTH_SECRET=
 ADMIN_EMAILS=                     # 固定管理者（カンマ区切り）
 
-# テストモード
-NEXT_PUBLIC_DEV_TEST_MODE=false
+# 開発用（任意・本番では未設定）
+NEXT_PUBLIC_DEV_TEST_MODE=        # true で時間帯に関係なくメニュー表示
 ```
 
 > ⚠️ `.env.local` 本体・APIキー・鍵・生パスワードは絶対にコミットしない（`.gitignore` で `.env*.local` は除外済み）。秘密情報は常に `.env.local` か Vercel の環境変数に置き、このガイドには「名前」だけを残すこと。
