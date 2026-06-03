@@ -78,18 +78,22 @@ src/
 ```
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=        # サーバー専用・絶対に公開しない
 
 # Stripe
 STRIPE_SECRET_KEY=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=            # Webhook 検証用
 
 # NextAuth（Google OAuth）
+NEXTAUTH_URL=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 NEXTAUTH_SECRET=
 ADMIN_EMAILS=                     # 固定管理者（カンマ区切り）
+
+# テストモード
+NEXT_PUBLIC_DEV_TEST_MODE=false
 ```
 
 > ⚠️ `.env.local` 本体・APIキー・鍵・生パスワードは絶対にコミットしない（`.gitignore` で `.env*.local` は除外済み）。秘密情報は常に `.env.local` か Vercel の環境変数に置き、このガイドには「名前」だけを残すこと。
