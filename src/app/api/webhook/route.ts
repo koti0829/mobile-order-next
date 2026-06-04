@@ -26,6 +26,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
   }
 
+  // ── デモセッションは完全スルー（在庫・注文に一切触れない） ──
+  // /api/demo-checkout が付与する metadata.demo === 'true' を検出したら即 200。
+  // デモは在庫予約していないため restore も不要。本物セッションの挙動は不変。
+  const obj = event.data.object as { metadata?: Record<string, string> };
+  if (obj?.metadata?.demo === 'true') {
+    return NextResponse.json({ received: true });
+  }
+
   // checkout.session.expired → 確保済み在庫を戻す
   if (event.type === 'checkout.session.expired') {
     const session = event.data.object;
