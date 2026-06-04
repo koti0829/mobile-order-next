@@ -103,9 +103,13 @@ const entryKey = (menuId: number, opts: OptionItem[]) =>
 interface HomePageProps {
   initialMenu?:    MenuItem[];
   initialOptions?: OptionItem[];
+  isDemo?:         boolean;
 }
 
-export default function HomePage({ initialMenu, initialOptions }: HomePageProps) {
+// デモモード時に固定する営業状態（lunch・営業中）
+const DEMO_STATUS: AppStatus = { status: 'open', slot: 'lunch', slotInfo: SLOTS['lunch'] };
+
+export default function HomePage({ initialMenu, initialOptions, isDemo = false }: HomePageProps) {
   const [menu,           setMenu]           = useState<MenuItem[]>(initialMenu    ?? []);
   const [cart,           setCart]           = useState<CartEntry[]>([]);
   const [customOptions,  setCustomOptions]  = useState<OptionItem[]>(initialOptions ?? []);
@@ -114,7 +118,7 @@ export default function HomePage({ initialMenu, initialOptions }: HomePageProps)
   const [activeCategory, setCategory]       = useState('すべて');
   const [sheet,          setSheet]          = useState<Sheet>(null);
   const [settings,       setSettings]       = useState<AppSettings | null>(null);
-  const [status,         setStatus]         = useState<AppStatus>(() => getStatus(null));
+  const [status,         setStatus]         = useState<AppStatus>(() => isDemo ? DEMO_STATUS : getStatus(null));
   const [loading,        setLoading]        = useState(false);
   const [toast,          setToast]          = useState<string | null>(null);
   const [recentTickets,  setRecentTickets]  = useState<RecentTicket[]>([]);
@@ -144,6 +148,7 @@ export default function HomePage({ initialMenu, initialOptions }: HomePageProps)
 
   // 設定取得（営業時間・休業日・受付停止）
   useEffect(() => {
+    if (isDemo) return; // デモは lunch・営業中固定。設定を読まない
     (async () => {
       try {
         const res = await fetch('/api/settings');
@@ -158,10 +163,11 @@ export default function HomePage({ initialMenu, initialOptions }: HomePageProps)
 
   // settings が変わるたびにステータスを再計算・インターバルをリセット
   useEffect(() => {
+    if (isDemo) return; // デモは DEMO_STATUS 固定
     setStatus(getStatus(settings));
     const t = setInterval(() => setStatus(getStatus(settings)), 60_000);
     return () => clearInterval(t);
-  }, [settings]);
+  }, [settings, isDemo]);
 
   // 食券履歴
   useEffect(() => {
@@ -284,7 +290,8 @@ export default function HomePage({ initialMenu, initialOptions }: HomePageProps)
       });
 
     try {
-      const res  = await fetch('/api/checkout', {
+      const endpoint = isDemo ? '/api/demo-checkout' : '/api/checkout';
+      const res  = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items, slot: status.slot ?? 'lunch' }),
@@ -328,6 +335,22 @@ export default function HomePage({ initialMenu, initialOptions }: HomePageProps)
 
   return (
     <>
+      {/* ── Demo Banner（デモモードのみ） ── */}
+      {isDemo && (
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 999,
+          background: '#fffbe6', borderBottom: '2px solid #f0c000',
+          padding: '10px 14px', fontSize: 12.5, color: '#7a5c00', lineHeight: 1.6,
+        }}>
+          <div style={{ fontWeight: 800, marginBottom: 2 }}>
+            👀 これはデモです。Stripe のテスト決済のみで、実際の請求は発生しません。
+          </div>
+          <div style={{ fontWeight: 600 }}>
+            テストカード：<strong>4242 4242 4242 4242</strong> / 有効期限＝任意の未来の日付 / CVC＝任意の3桁 / 郵便番号＝任意
+          </div>
+        </div>
+      )}
+
       {/* ── Time Banner ── */}
       <div className={`time-banner ${bannerClass}`}>
         <div className="tb-left">
@@ -505,9 +528,11 @@ export default function HomePage({ initialMenu, initialOptions }: HomePageProps)
       </main>
 
       <div className="page-bottom" />
-      <footer className="page-footer">
-        <Link href="/admin" className="admin-link">管理者ログイン</Link>
-      </footer>
+      {!isDemo && (
+        <footer className="page-footer">
+          <Link href="/admin" className="admin-link">管理者ログイン</Link>
+        </footer>
+      )}
 
       {/* ── Cart Bar ── */}
       <div className={`cart-bar ${totalItems() > 0 ? 'show' : ''}`}>
