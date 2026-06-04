@@ -346,7 +346,7 @@ export default function HomePage({ initialMenu, initialOptions, isDemo = false }
             👀 これはデモです。Stripe のテスト決済のみで、実際の請求は発生しません。
           </div>
           <div style={{ fontWeight: 600 }}>
-            テストカード：<strong>4242 4242 4242 4242</strong> / 有効期限＝任意の未来の日付 / CVC＝任意の3桁 / 郵便番号＝任意
+            テストカード：<strong>4242 4242 4242 4242</strong> / 有効期限＝任意の未来の日付 / CVC＝任意の3桁
           </div>
         </div>
       )}
@@ -367,7 +367,8 @@ export default function HomePage({ initialMenu, initialOptions, isDemo = false }
           </span>
         </div>
         <div className="tb-right">
-          {isOpen    ? `終了まで約${toMin(...effectiveHours[status.slot!].eh) - nowMin()}分`
+          {isDemo && isOpen ? ''
+          : isOpen    ? `終了まで約${toMin(...effectiveHours[status.slot!].eh) - nowMin()}分`
           : isWaiting ? `${Math.floor(status.minutesUntil! / 60)}h${status.minutesUntil! % 60}m後 ${status.slotInfo!.label}開始`
           : isPaused  ? '再開までお待ちください'
           : isHoliday ? '次回の営業日をご確認ください'
